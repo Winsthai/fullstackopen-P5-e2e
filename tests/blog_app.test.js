@@ -57,5 +57,23 @@ describe('Blog app', () => {
 
         await expect(page.getByText('New Blog Matti Luukkainen')).toBeVisible()
     })
+
+    describe('and a blog is already created', () => {
+        beforeEach(async ({ page }) => {
+            // User Matti Luukkainen creates a blog
+            await page.getByRole('button', { name: 'create new blog' }).click()
+            await page.getByPlaceholder('Type title here').fill('New Blog')
+            await page.getByPlaceholder('Type author here').fill('Matti Luukkainen')
+            await page.getByPlaceholder('Type url here').fill('https://www.google.com/')
+            await page.getByRole('button', { name: 'create' }).click()
+        })
+
+        test('the blog can be liked', async ({ page }) => {
+            await page.getByRole('button', { name: 'view' }).click()
+            await expect(page.getByText('likes: 0')).toBeVisible()
+            await page.getByRole('button', { name: 'like' }).click()  
+            await expect(page.getByText('likes: 1')).toBeVisible()
+        })
+    })
   })
 })
