@@ -74,6 +74,14 @@ describe('Blog app', () => {
             await page.getByRole('button', { name: 'like' }).click()  
             await expect(page.getByText('likes: 1')).toBeVisible()
         })
+
+        test('that the user who created the blog can delete it', async ({ page }) => {
+            await page.getByRole('button', { name: 'view' }).click()
+            page.on('dialog', dialog => dialog.accept());
+            await page.getByRole('button', { name: 'remove' }).click()
+
+            await expect(page.getByText('New Blog Matti Luukkainen')).not.toBeVisible()
+        })
     })
   })
 })
