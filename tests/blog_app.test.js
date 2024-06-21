@@ -118,4 +118,77 @@ describe('Blog app', () => {
 
         await expect(page.getByRole('button', { name: 'remove' })).not.toBeVisible()
     }) 
+
+    test('That blogs are listed in order from most liked to least liked', async ({ page, request }) => {
+        // Get token from login api
+        const response = await request.post('/api/login', {
+            data: {
+                username: "mluukkai",
+                password: "salainen"
+            }
+        })
+
+        const body = await response.text()
+        const token = JSON.parse(body).token
+
+        // Create blog posts
+        await request.post('api/blogs', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            data: {
+                title: "Hello world third version", 
+                author: "Harris Yellow",
+                url: "https://www.facebook.com/",
+                likes: 2099
+            }
+        })
+
+        await request.post('api/blogs', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            data: {
+                title: "Hello world second version", 
+                author: "John Green",
+                url: "https://www.google.com/",
+                likes: 100
+            }
+        })
+
+        await request.post('api/blogs', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            data: {
+                title: "Hello world first version", 
+                author: "Marvin Grey",
+                url: "https://www.twitter.com/",
+                likes: 99
+            }
+        })
+
+        // Refresh the page to load new blogs
+        await page.goto('/')
+        
+        // Logging in 
+        await page.getByTestId('username').fill('mluukkai')
+        await page.getByTestId('password').fill('salainen')
+        await page.getByRole('button', { name: 'login' }).click()
+
+        // Check that first blog has highest number of likes - 2099
+        await page.getByRole('button', { name: 'view' }).first().click()
+        await expect(page.getByText('likes: 2099')).toBeVisible()
+        await page.getByRole('button', { name: 'hide' }).click()
+
+        // Check that second blog has second highest number of likes - 100
+        await page.getByRole('button', { name: 'view' }).nth(1).click()
+        await expect(page.getByText('likes: 100')).toBeVisible()
+        await page.getByRole('button', { name: 'hide' }).click()
+
+        // Check that second blog has lowest number of likes - 99
+        await page.getByRole('button', { name: 'view' }).nth(2).click()
+        await expect(page.getByText('likes: 99')).toBeVisible()
+        await page.getByRole('button', { name: 'hide' }).click()
+    })
 })
